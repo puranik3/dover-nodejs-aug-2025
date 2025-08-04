@@ -27,6 +27,7 @@ readFile(
     filepath,
     options,
     // "callback function" -> this function is called when the file has been completely read
+    // "error-first callback" -> error is the first argument
     (err, contents) => { // f
         if ( err ) {
             console.log( err.message );
