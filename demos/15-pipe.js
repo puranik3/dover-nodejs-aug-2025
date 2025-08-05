@@ -1,5 +1,5 @@
 // pipe is a way to join a read stream (source) to a write stream (destination)
-const { pipe, createReadStream, createWriteStream } = require( 'fs' );
+const { createReadStream, createWriteStream } = require( 'fs' );
 const path = require( 'node:path' );
 
 const srcFile = path.join( __dirname, "grokking-algorithms.pdf" );
