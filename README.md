@@ -4,6 +4,9 @@
 ## Announcements
 Please share your personal GitHub id soon. This repository will not be public by the end of this week. If you share your GitHub id, I'll add you as a collaborator on this repository and you will have lifelong access to this repo.
 
+## Exercises
+- Explore `writeFile` from both `node:fs` and `node:fs/promises`
+
 ## Daywise Topics covered
 
 ### Day 1 - August 4, 2025
