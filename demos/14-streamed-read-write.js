@@ -33,7 +33,7 @@ rs.on( 'end', () => {
     ws.end();
 });
 
-// fired once if error ocuurs, or never
+// fired once if error occurs, or never
 rs.on( 'error', (error) => {
     console.log( error.message );
 });
