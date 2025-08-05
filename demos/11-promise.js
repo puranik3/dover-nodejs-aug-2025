@@ -3,6 +3,11 @@ function sum( x, y ) {
         ( resolve, reject ) => {
             setTimeout(
                 () => {
+                    if ( typeof x !== 'number' || typeof y !== 'number' ) {
+                        reject( new Error( 'At least one argument was not a number' ) );
+                        return;
+                    }
+
                     // We communicate to the Promise object, the result
                     resolve( x + y );
                 },
@@ -14,7 +19,7 @@ function sum( x, y ) {
 
 // Hey Promise! When you get the result, call the function passed to then()
 sum( 12, 13 )
-    .then(
+    .then( // called only in case of success
         ( result1 ) => {
             console.log( "result1 = ", result1 );
 
@@ -32,13 +37,18 @@ sum( 12, 13 )
         ( result2 ) => {
             console.log( "result2 = ", result2 );
 
-            return sum( result2, 15 );
+            return sum( result2, '15' );
         }
     )
     .then(
         ( result3 ) => {
             console.log( "result3 = ", result3 );
         }
-    );
+    )
+    .catch( // called only in case of error
+        ( error ) => {
+            console.log( error.message );
+        }
+    )
 
 console.log( 'end of script' );
