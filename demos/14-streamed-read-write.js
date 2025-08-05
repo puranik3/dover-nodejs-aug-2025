@@ -1,15 +1,17 @@
-// Streamed reading / writing is useful hen working with large files - eg. video files
+// Streamed reading / writing is useful when working with large files - eg. video files
 // These methods are based on EventEmitter (another way of communicating the result of an operations, eg. contents of a file that is read)
 const { createReadStream, createWriteStream } = require( 'fs' );
 const path = require( 'node:path' );
 
-const filepathPackage = path.join( __dirname, "grokking-algorithms.pdf" );
+const srcFile = path.join( __dirname, "grokking-algorithms.pdf" );
+const destFile = path.join( __dirname, "grokking-algorithms-copy.pdf" );
 
 // const options = { encoding: 'utf-8' };
 
 // read stream (rs) is returned
 // When a chunk is read (generally ~64 KB by default), an event is emitted
-const rs = createReadStream( filepathPackage /*, options */  );
+const rs = createReadStream( srcFile /*, options */  );
+const ws = createWriteStream( destFile/*, options */  );
 
 let counter = 1;
 
@@ -20,15 +22,23 @@ rs.on( 'data', (chunk) => {
     console.log( 'Chunk #' + counter );
     console.log( chunk );
     ++counter;
+
+    ws.write( chunk );
 });
 
 // 'end' even is emitted when file has been completely read (fired once)
 rs.on( 'end', () => {
     console.log( 'File has been read' );
+
+    ws.end();
 });
 
 // fired once if error ocuurs, or never
 rs.on( 'error', (error) => {
+    console.log( error.message );
+});
+
+ws.on( 'error', (error) => {
     console.log( error.message );
 });
 
