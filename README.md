@@ -18,3 +18,12 @@ Please share your personal GitHub id soon. This repository will not be public by
 - Reading a file
 - Error-first callbacks
 - Understanding event queue, event loop using setTimeout()
+
+### Day 2 - August 5, 2025
+- Callback hell
+- Creating method that works with `Promise`
+- `then()`, `catch()`, promise chaining
+- `async`..`await`
+- Reading a file using `readFile` of `fs/promises`
+- Streamed file reading and writing, event emitter way of working
+- Using `pipe()` to join read and write streams, and copy a file
