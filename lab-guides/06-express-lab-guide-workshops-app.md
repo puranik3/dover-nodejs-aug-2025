@@ -67,7 +67,9 @@ app.listen( PORT );
 ```json
 {
     "main": "src/app.js",
-    "scripts": "nodemon"
+    "scripts": {
+        "start": "nodemon"
+    }
 }
 ```
 - Start the app. Note that it restarts automatically if you make any changes in the application (change something in `app.js`). If you make changes to `.env` file though, you need to restart the ap manually (Ctrl+C to stop, then start it like so).
