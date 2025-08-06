@@ -20,7 +20,7 @@ class Stopwatch extends EventEmitter {
     }
 
     // EXERCISE
-    // Implement a stop method, which emits a stop event, and passes the data as the totsl time elapsed. It should stp the interval function from executing further, and set the startTime back to 0.
+    // Implement a stop method, which emits a 'stop' event, and passes the data as the total time elapsed. It should stop the interval function from executing further, and set the startTime back to 0.
     // your code...
 }
 
