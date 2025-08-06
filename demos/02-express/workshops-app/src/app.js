@@ -1,5 +1,9 @@
 require( 'dotenv' ).config();
 // console.log( process.env ); // holds environment variables
+
+// add this...
+require( './data/init' );
+
 const express = require( 'express' );
 
 const app = express(); // Express Application object
