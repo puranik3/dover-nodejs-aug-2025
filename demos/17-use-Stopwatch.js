@@ -9,7 +9,12 @@ sw.on( 'tick', ( seconds ) => {
 });
 
 // write code to listen for stop event and set up the listener with on()
-// your code...
+sw.on( 'stop', ( seconds ) => {
+    console.log( `Stopwatch ran for ${seconds} seconds and stopped` );
+})
 
 // call stop() to stop the stopwatch
-// your code...
+setTimeout(
+    () => sw.stop(),
+    10000
+);

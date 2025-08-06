@@ -21,7 +21,14 @@ class Stopwatch extends EventEmitter {
 
     // EXERCISE
     // Implement a stop method, which emits a 'stop' event, and passes the data as the total time elapsed. It should stop the interval function from executing further, and set the startTime back to 0.
-    // your code...
+    stop() {
+        const currentTime = new Date();
+        const seconds = ( currentTime.getTime() - this.startTime.getTime() ) / 1000;
+
+        clearInterval( this.id );
+
+        this.emit( 'stop', seconds );
+    }
 }
 
 module.exports = Stopwatch;
