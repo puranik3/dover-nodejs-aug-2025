@@ -1,7 +1,7 @@
 const { createServer } = require( 'node:http' );
 const { createReadStream } = require( 'node:fs' );
 const { join } = require( 'node:path' );
-const URL = require( 'url' );
+const URL = require( 'node:url' );
 
 // file paths
 const options = { encoding : 'utf-8' };
