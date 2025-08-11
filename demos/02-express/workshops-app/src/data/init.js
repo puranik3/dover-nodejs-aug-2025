@@ -1,5 +1,17 @@
 const mongoose = require( 'mongoose' );
 
+// disallows saving fields not in the schema
+mongoose.set('strictQuery', true);
+mongoose.set('strict', true);
+
+// prevent casting - Be careful, this affects all String fields globally!
+mongoose.Schema.Types.String.cast(v => {
+  if (typeof v !== 'string') {
+    throw new Error('Value must be a string');
+  }
+  return v;
+});
+
 require( './models/Workshop' )
 
 const connectionStr = process.env.DB_CONNECTION_STRING;

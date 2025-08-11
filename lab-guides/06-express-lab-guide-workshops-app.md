@@ -1203,7 +1203,7 @@ module.exports = {
 const services = require( '../services/workshops.service' );
 
 const getWorkshops = async (req, res) => {
-    const workshops = await getAllWorkshops();
+    const workshops = await services.getAllWorkshops();
 
     res.json({
         status: 'success',
@@ -1222,7 +1222,7 @@ const postWorkshop = async (req, res) => {
     }
 
     try {
-        const updatedWorkshop = await addWorkshop( newWorkshop );
+        const updatedWorkshop = await services.addWorkshop( newWorkshop );
         res.status(201).json({
             status: 'success',
             data: updatedWorkshop
