@@ -12,7 +12,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/demos/02-express/workshops-app/src/app.js"
+            "program": "${workspaceFolder}/demos/02-express/workshops-app/src/app.js",
+            "envFile": "${workspaceFolder}/demos/02-express/workshops-app/.env"
         }
     ]
 }
