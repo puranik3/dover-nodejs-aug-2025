@@ -3,6 +3,7 @@ require( 'dotenv' ).config();
 
 require( './data/init' );
 const indexRouter = require( './routes/index.route' );
+const workshopsRouter = require( './routes/workshops.route' );
 
 const express = require( 'express' );
 
@@ -10,6 +11,7 @@ const app = express(); // Express Application object
 
 // app.use( middleware ); // routers are middleware
 app.use( indexRouter );
+app.use( workshopsRouter );
 
 const PORT = process.env.PORT || 3000;
 app.listen( PORT );
