@@ -14,7 +14,7 @@ app.use( express.json() );
 
 // app.use( middleware ); // routers are middleware
 app.use( indexRouter );
-app.use( workshopsRouter );
+app.use( '/api/workshops', workshopsRouter );
 
 const PORT = process.env.PORT || 3000;
 app.listen( PORT );

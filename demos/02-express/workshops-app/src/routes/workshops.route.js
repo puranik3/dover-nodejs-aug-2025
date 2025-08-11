@@ -5,25 +5,18 @@ let nextId = 13;
 
 const router = express.Router();
 
-router.get( '/workshops', ( req, res ) => {
-    res.json( workshops );
-});
+router.route( '/' )
+    .get(( req, res ) => {
+        res.json( workshops );
+    })
+    .post(( req, res ) => {
+        const newWorkshop = req.body;
 
-// router.post( '/workshops', ( req, res ) => {
-//     const body = req.body;
-//     // send the response and set the 'Content-Type' : 'text/html'
-//     // res.send('Hello Postman');
-//     res.json( body );
-// });
+        newWorkshop.id = nextId;
+        ++nextId;
+        workshops.push( newWorkshop );
 
-router.post( '/workshops', ( req, res ) => {
-    const newWorkshop = req.body;
-
-    newWorkshop.id = nextId;
-    ++nextId;
-    workshops.push( newWorkshop );
-
-    res.status( 201 ).json( newWorkshop );
-});
+        res.status( 201 ).json( newWorkshop );
+    });
 
 module.exports = router;
