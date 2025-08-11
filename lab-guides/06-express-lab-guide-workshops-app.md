@@ -2705,7 +2705,7 @@ router.patch( '/:id/downvote', authenticate, services.patchDownvote );
 module.exports = router;
 ```
 
-## Step 34: Setup CORS middleware
+## Step 33: Setup CORS middleware
 ```bash
 npm i cors
 ```
@@ -2717,7 +2717,7 @@ const cors = require(cors);
 app.use(cors()); // @todo improve this to restrict based on domain, and allow domain based on environment (development/production)
 ```
 
-## Step 35: Implement session voting feature using web sockets
+## Step 34: Implement session voting feature using web sockets
 - Web sockets enable real-time 2-way data communication between client and server in web applications. The Web Socket protocol is built on top of HTTP in the sense the `ws` connection is established over `http` / `https`. We enable web socket support using `socket.io`. Install it.
 ```bash
 npm i socket.io
@@ -2809,8 +2809,9 @@ server.listen(PORT, () => {
 });
 ```
 
-## Step 36: Enable file upload
+## Step 35: Enable file upload
 - We use `multer` package to upload files. Install `multer`
 ```bash
 npm i multer
 ```
+- Work-in-progress
