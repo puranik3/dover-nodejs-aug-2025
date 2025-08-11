@@ -1,5 +1,7 @@
 const mongoose = require( 'mongoose' );
 
+require( './models/Workshop' )
+
 const connectionStr = process.env.DB_CONNECTION_STRING;
 
 const connect = async () => {
