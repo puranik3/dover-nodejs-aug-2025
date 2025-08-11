@@ -1,5 +1,7 @@
 const workshops = require( '../data/workshops.json' );
 
+let nextId = 13;
+
 const getWorkshops = ( req, res, next ) => {
     res.json( workshops );
 };

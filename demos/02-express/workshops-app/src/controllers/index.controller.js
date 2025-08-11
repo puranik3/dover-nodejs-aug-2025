@@ -1,0 +1,3 @@
+// you need to move the controller functions here, export them, and use in index.route.js file
+
+// your code...

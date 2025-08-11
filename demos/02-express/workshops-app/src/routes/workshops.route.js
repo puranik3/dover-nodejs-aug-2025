@@ -1,8 +1,6 @@
 const express = require( 'express' );
 const controllers = require( '../controllers/workshops.controller' );
 
-let nextId = 13;
-
 const router = express.Router();
 
 router.route( '/' )
