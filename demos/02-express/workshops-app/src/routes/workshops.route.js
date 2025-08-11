@@ -6,10 +6,10 @@ let nextId = 13;
 const router = express.Router();
 
 router.route( '/' )
-    .get(( req, res ) => {
+    .get(( req, res, next ) => {
         res.json( workshops );
     })
-    .post(( req, res ) => {
+    .post(( req, res, next ) => {
         const newWorkshop = req.body;
 
         newWorkshop.id = nextId;

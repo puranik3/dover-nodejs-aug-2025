@@ -9,6 +9,20 @@ const express = require( 'express' );
 
 const app = express(); // Express Application object
 
+app.use(
+    ( req, res, next ) => {
+        console.log( 'middleware 1 called' );
+        const requestDate = new Date();
+
+        next(); // now Express knows we are done processing the request
+
+        console.log( 'middleware 1 after call to next' );
+        const responseDate = new Date();
+
+        console.log( 'Time for processing (in ms) = ', responseDate.getTime() - requestDate.getTime() );
+    }
+);
+
 // configure application to read JSON data in incoming requests and set it up on req.body
 app.use( express.json() );
 
