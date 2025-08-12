@@ -15,6 +15,7 @@ mongoose.Schema.Types.String.cast(v => {
 });
 
 require( './models/Workshop' )
+require( './models/Session' )
 
 const connectionStr = process.env.DB_CONNECTION_STRING;
 
