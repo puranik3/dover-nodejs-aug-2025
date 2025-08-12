@@ -4,6 +4,7 @@ require( 'dotenv' ).config();
 require( './data/init' );
 const indexRouter = require( './routes/index.route' );
 const workshopsRouter = require( './routes/workshops.route' );
+const sessionsRouter = require( './routes/sessions.route' );
 
 const express = require( 'express' );
 const morgan = require( 'morgan' );
@@ -33,6 +34,7 @@ app.use( express.json() );
 // app.use( middleware ); // routers are middleware
 app.use( indexRouter );
 app.use( '/api/workshops', workshopsRouter );
+app.use( '/api/sessions', sessionsRouter );
 
 // resource not found middleware
 app.use( notFoundHandler );

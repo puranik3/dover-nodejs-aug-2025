@@ -1711,7 +1711,7 @@ const mongoose = require('mongoose');
 
 const sessionSchema = new mongoose.Schema({
   workshopId: {
-    type: Number,
+    type: mongoose.Schema.ObjectId,
     required: true
   },
   sequenceId: {

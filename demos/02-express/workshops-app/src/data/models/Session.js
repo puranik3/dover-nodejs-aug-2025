@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const sessionSchema = new mongoose.Schema({
   workshopId: { // foreign key
-    type: Number,
+    type: mongoose.Schema.ObjectId,
     required: true
   },
   sequenceId: {
