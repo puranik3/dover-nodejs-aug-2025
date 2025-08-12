@@ -3,12 +3,23 @@ const services = require( '../services/workshops.service' );
 
 // let nextId = 13;
 
+// http://localhost:3000/api/workshops
+// http://localhost:3000/api/workshops?page=1&sort=name&category=frontend
 const getWorkshops = async ( req, res, next ) => {
-    const workshops = await services.getAllWorkshops();
+    let { page, sort : sortField, category } = req.query;
+
+    if( page ) {
+        page = +page;
+    } else {
+        page = 1;
+    }
+
+    const data = await services.getAllWorkshops(page, sortField, category);
 
     res.json({
         status: 'success',
-        data: workshops
+        // data: data
+        data
     });
 };
 

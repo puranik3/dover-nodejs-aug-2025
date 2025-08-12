@@ -1,9 +1,45 @@
 const mongoose = require("mongoose");
 const Workshop = mongoose.model("Workshop");
 
-const getAllWorkshops = async () => {
-    const workshops = await Workshop.find();
-    return workshops;
+const getAllWorkshops = async (page, sortField, category = '') => {
+    const filters = {};
+
+    // like WHERE clause
+    if (category) {
+        filters.category = category;
+    }
+
+    const query = Workshop.find(filters);
+
+    // We can either blacklist or whitelist fields. Here we blacklist (i.e. omit certain fields)
+    query.select({
+        description: false
+    });
+
+    if (sortField) {
+        query.sort({
+            [sortField]: 1,
+        });
+    }
+
+    // pagination (assuming 10 per page)
+    query.skip(10 * (page - 1)).limit(10);
+
+    const [ workshops, count ] = await Promise.all(
+        [
+            query.exec(),
+            Workshop.countDocuments(filters)
+        ]
+    );
+
+    // return {
+    //     workshops: workshops,
+    //     count: count
+    // };
+    return {
+        workshops,
+        count
+    };
 };
 
 const addWorkshop = async (workshop) => {
