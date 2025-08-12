@@ -9,8 +9,11 @@ const timeSchema = require( './Time' );
  */
 const workshopsSchema = new mongoose.Schema(
   {
-    // name: String, // if we do not want validation except type validation, we can do this
+    // _id: {
+    //     type: mongoose.Schema.ObjectId
+    // },
 
+    // name: String, // if we do not want validation except type validation, we can do this
     name: {
         type: String,
         required: true,
@@ -75,8 +78,18 @@ const workshopsSchema = new mongoose.Schema(
     // sessions: {
     //     type: [ mongoose.Schema.Types.ObjectId ]
     // },
+  },
+  {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true },
   }
 );
+
+workshopsSchema.virtual( 'sessions', {
+    ref: 'Session',
+    localField: '_id',
+    foreignField: 'workshopId' // the field in the other collection (Session) that references a document in this collection (Workshop)
+});
 
 // The name of the collection is the plural form of the name of the Model
 mongoose.model( 'Workshop', workshopsSchema );
