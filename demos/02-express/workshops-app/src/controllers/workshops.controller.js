@@ -1,5 +1,6 @@
 // const workshops = require( '../data/workshops.json' );
 const services = require( '../services/workshops.service' );
+const sessionServices = require( '../services/sessions.service' );
 
 // let nextId = 13;
 
@@ -129,11 +130,34 @@ const addSpeakers = async ( req, res ) => {
     }
 };
 
+const postSession = async ( req, res ) => {
+    const workshopId = req.params.id;
+
+    const session = {
+        // workshopId: workshopId,
+        workshopId,
+        ...req.body
+    };
+
+    try {
+        let newSession = await sessionServices.addSession( session );
+
+        res.status( 201 ).json({
+            status: 'success',
+            data: newSession
+        });
+    } catch( error ) {
+        error.status = 400;
+        throw error;
+    }
+};
+
 module.exports = {
     getWorkshops,
     postWorkshop,
     getWorkshopById,
     patchWorkshop,
     deleteWorkshop,
-    addSpeakers
+    addSpeakers,
+    postSession
 };
