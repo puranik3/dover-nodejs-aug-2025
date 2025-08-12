@@ -16,6 +16,7 @@ router.route( '/:id/speakers' )
     .patch( controllers.addSpeakers );
 
 router.route( '/:id/sessions' )
+     .get( controllers.getSessions )
      .post( controllers.postSession );
 
 module.exports = router;
