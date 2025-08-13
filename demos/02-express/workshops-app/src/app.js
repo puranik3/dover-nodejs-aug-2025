@@ -10,11 +10,15 @@ const usersRouter = require( './routes/users.route' );
 const express = require( 'express' );
 const morgan = require( 'morgan' );
 const cors = require('cors');
+const helmet = require('helmet');
 const { notFoundHandler, errorHandler } = require( './middleware/errors' );
+const limiter = require( './middleware/limiter' );
 
 const app = express(); // Express Application object
 
 app.use( morgan( 'combined' ) );
+app.use( helmet() );
+app.use(limiter);
 app.use( cors() ); // NOT Good - Better to specify domain, methods allowed etc.
 
 app.use(
