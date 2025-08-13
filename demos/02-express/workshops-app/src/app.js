@@ -5,6 +5,7 @@ require( './data/init' );
 const indexRouter = require( './routes/index.route' );
 const workshopsRouter = require( './routes/workshops.route' );
 const sessionsRouter = require( './routes/sessions.route' );
+const usersRouter = require( './routes/users.route' );
 
 const express = require( 'express' );
 const morgan = require( 'morgan' );
@@ -33,6 +34,7 @@ app.use( express.json() );
 
 // app.use( middleware ); // routers are middleware
 app.use( indexRouter );
+app.use( '/api/auth', usersRouter );
 app.use( '/api/workshops', workshopsRouter );
 app.use( '/api/sessions', sessionsRouter );
 

@@ -14,9 +14,9 @@ mongoose.Schema.Types.String.cast(v => {
   return v;
 });
 
-require( './models/Workshop' )
-require( './models/Session' )
-require( './models/User' )
+require( './models/Workshop' );
+require( './models/Session' );
+require( './models/User' );
 
 const connectionStr = process.env.DB_CONNECTION_STRING;
 

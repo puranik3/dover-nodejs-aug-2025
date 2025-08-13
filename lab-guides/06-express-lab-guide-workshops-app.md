@@ -2292,11 +2292,11 @@ module.exports = {
 - In `src/routes/users.route.js`
 ```js
 const express = require( 'express' );
-const services = require( '../controllers/users.controller' );
+const controllers = require( '../controllers/users.controller' );
 
 const router = express.Router();
 
-router.post( '/register', services.register );
+router.post( '/register', controllers.register );
 
 module.exports = router;
 ```
