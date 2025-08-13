@@ -61,7 +61,14 @@ app.get('/', ( req, res ) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen( PORT );
+const server = app.listen( PORT, () => {
+    console.log(`✅ Server started successfully on http://localhost:${PORT}`);
+} );
+
+server.on('error', (err) => {
+    console.error('❌ Failed to start server:', err.message);
+    process.exit(1); // stop the app
+});
 ```
 - Add a start script in `package.json`. Set `src/app.js` as the main script.
 ```json
@@ -2809,7 +2816,274 @@ server.listen(PORT, () => {
 });
 ```
 
-## Step 35: Enable file upload
+## Step 35: Add helmet to secure HTTP headers
+Helmet adds / removes some HTTP headers in order to improve security. Check <a href="https://www.npmjs.com/package/helmet">Helmet npm module</a> and the <a href="http://expressjs.com/en/advanced/best-practice-security.html#use-helmet">Express JS site</a> for more details.
+- Install helmet
+```bash
+npm i helmet
+```
+- In `src/app.js`
+```js
+const helmet = require('helmet');
+```
+```js
+const app = express();
+
+// add this...
+app.use(helmet());
+
+// rest of code...
+```
+
+## Step 36: Rate Limit the APIs
+We want to prevent excessive load on our API servers from clients, especially client that run rogue and make multiple calls to the APIs in very short duration of time. This technique is called rate-limiting. Here we store rate-limiting data in memory, but a more robust alternative is to store it in a key-value store like Redis (this is left for your exploration).
+```bash
+npm i express-rate-limit request-ip
+```
+- In `middleware/limiter.js`
+```js
+const { getClientIp } = require('request-ip');
+const rateLimit = require('express-rate-limit');
+
+// Configure in-memory rate limiter
+const limiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 10,                        // v7+: use `limit` (not `max`)
+    standardHeaders: 'draft-7',       // sends RateLimit-* headers
+    legacyHeaders: false,             // no X-RateLimit-* headers
+    // Use API key or user id if you have one; otherwise fallback to an IPv6-safe key:
+    keyGenerator: (req, res) => {
+        // Example: prefer an API key header first (optional)
+        const apiKey = req.get('x-api-key');
+        if (apiKey) return apiKey;
+
+        // Fallback: client IP via request-ip, normalized for IPv6
+        const ip = getClientIp(req) || req.ip || 'unknown';
+        // Optionally pass a subnet size (eg /64). If omitted, library default is used.
+        return rateLimit.ipKeyGenerator(ip /*, 64 */);
+    },
+    handler: (req, res) => {
+        const error = new Error('You have exceeded the maximum number of requests. Please try after some time.');
+        error.status = 429;
+        throw error;
+    },
+});
+
+module.exports = limiter;
+```
+- In `src/app.js`
+```js
+const limiter = require( './middleware/limiter' );
+```
+```js
+app.use(helmet());
+
+// Add this...
+app.use(limiter);
+
+// rest of code...
+```
+### What a `keyGenerator` is
+
+`express-rate-limit` asks you for a **key** per request; all requests that return the same key share the same bucket (window + max). So the function decides *who counts as the “same client”*.
+
+```js
+keyGenerator: (req, res) => {
+  // 1) Prefer an API key (if present)
+  const apiKey = req.get('x-api-key');
+  if (apiKey) return apiKey;
+
+  // 2) Otherwise, use the client IP (IPv6-safe)
+  const ip = getClientIp(req) || req.ip || 'unknown';
+  return ipKeyGenerator(ip /*, 64 */);
+},
+```
+
+### 1) Prefer an API key
+
+```js
+const apiKey = req.get('x-api-key');
+if (apiKey) return apiKey;
+```
+
+* If the caller sends an `x-api-key` header **and** you actually validate/use API keys, that’s the most reliable identity.
+* All requests with the same API key share the same rate limit, regardless of IP changes.
+* **Security note:** Only do this for trusted/validated keys (e.g., server-to-server or authenticated API clients). A public browser client can spoof headers.
+
+> Variation: if your users authenticate, you can use a stable **user id** instead of an API key:
+> `return req.user?.id ?? ipKeyGenerator(ip, 64);`
+
+### 2) Fallback to client IP (IPv6-safe)
+
+```js
+const ip = getClientIp(req) || req.ip || 'unknown';
+return ipKeyGenerator(ip /*, 64 */);
+```
+
+* `getClientIp(req)` (from `request-ip`) pulls the most likely client IP across environments (direct, proxies, load balancers). If it’s missing, fall back to `req.ip`; if that’s missing, return a constant like `'unknown'` so the function always returns **something**.
+* `ipKeyGenerator(ip, subnetBits?)` normalizes IPv6 addresses to a subnet (commonly `/64`) so users **can’t bypass limits** by rotating IPv6 privacy addresses.
+
+  * For **IPv4**, the IP is essentially used as-is.
+  * For **IPv6**, lower bits are zeroed to the given subnet; everyone in that `/64` counts as the same client for rate limiting.
+  * You can pass the subnet size explicitly: `ipKeyGenerator(ip, 64)`. If you omit it, the library’s default is used.
+
+> Important: If you’re behind a proxy (Nginx/Heroku/Cloudflare/etc.), set `app.set('trust proxy', ...)` correctly so `req.ip` / `request-ip` see the real client IP; otherwise the proxy IP might be used and all users share one bucket.
+
+### Why the IPv6 normalization matters
+
+* With IPv6 privacy extensions, clients can frequently rotate addresses. If you keyed on the **full** IPv6, a user could “hop” addresses and avoid limits.
+* Normalizing to a subnet (e.g., `/64`) gives a **stable key** that still represents a single client/network, closing that bypass.
+
+### Examples
+
+* Header present: `x-api-key: abc123` → key = `abc123`.
+* No header, IPv4: `203.0.113.42` → key ≈ `203.0.113.42`.
+* No header, IPv6: `2001:db8:abcd:1234:5678:90ab:cdef:1111` → key ≈ the `/64`-normalized version of `2001:db8:abcd:1234::` (exact formatting is handled by the helper).
+
+### Handy variations
+
+* **Per-user after login:** `return req.user?.id ?? ipKeyGenerator(ip, 64);`
+* **Per-route quotas:** `return ipKeyGenerator(ip, 64) + ':' + req.path;`
+* **Broader/narrower IPv6 grouping:** tweak the second arg, e.g. `56` or `80` (broader = safer against bypass; narrower = more granular but riskier).
+
+## Step 37: Sanitizing user-generated content
+- Web applications may accept user-generated content and make it part of a public-facing web page. Eg. posts on Facebook, Twitter and lot of content on LinkedIn is user-generated. Having user-generated content comes with the risk of Cross-Site Scripting (XSS). This is prevented by sanitizing any user-generated content that becomes part of a web page.  
+- In this app, the workshop's description is user-generated and has rich content that becomes part of the web page (HTML content). This must be sanitized (JS script tags etc. must be removed).
+
+Great question. The safest pattern is:
+
+1. **Sanitize the HTML field (`description`) right in the controller** before persisting, and
+2. **Also sanitize at the schema level** (via a Mongoose setter) so *any* path that writes to the DB gets cleaned.
+
+Using the popular, well-maintained [`sanitize-html`](https://www.npmjs.com/package/sanitize-html) package is a good fit.
+
+---
+
+### 0) Install
+
+```bash
+npm i sanitize-html express-mongo-sanitize
+```
+
+> `express-mongo-sanitize` is optional but recommended to strip `$`/`.` from keys and prevent Mongo/NoSQL injection.
+
+- In `src/app.js`
+
+```js
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+```
+```js
+app.use(helmet());
+app.use(mongoSanitize()); // strips $ and . from keys by default
+```
+
+- Make a sanitizer with an allowlist (policy). Define **exactly** what HTML you want to keep in `description`. Start conservative and expand only as needed. In `config/sanitize.js`
+
+```js
+const sanitizeHtml = require('sanitize-html');
+
+const DESCRIPTION_POLICY = {
+    // keep it tight; add tags only if you truly need them
+    allowedTags: [
+        'b','strong','i','em','u','s',
+        'p','br','ul','ol','li',
+        'blockquote','code','pre',
+        'h1','h2','h3','h4','h5','h6',
+        'a','img'
+    ],
+    allowedAttributes: {
+        a: ['href', 'name', 'target', 'rel'],
+        img: ['src', 'alt', 'title', 'width', 'height'],
+        '*': ['title'] // very limited global attrs
+    },
+    // Only allow safe URL schemes; blocks javascript:, data: by default (except data for images if you add it)
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    // If you *must* allow data URLs for images, add: 'data' to allowedSchemesByTag.img
+    allowedSchemesByTag: {
+        img: ['http', 'https'] // add 'data' if you trust your inputs
+    },
+    // Add `rel="noopener nofollow"` etc. on anchors you keep
+    transformTags: {
+        'a': sanitizeHtml.simpleTransform('a', { rel: 'noopener nofollow ugc' }, true)
+    },
+    // Enforce <a target> safety if you allow target
+    allowedIframeHostnames: [], // keep empty unless explicitly needed
+};
+
+function sanitizeDescription(html) {
+    if (typeof html !== 'string') return '';
+    return sanitizeHtml(html, DESCRIPTION_POLICY);
+}
+
+module.exports = { sanitizeDescription };
+```
+
+- Sanitize in the controller before calling the service. In `controllers/workshops.controller.js`
+```js
+const { sanitizeDescription } = require('../config/sanitize' );
+```
+```js
+const postWorkshop = async (req, res) => {
+    const newWorkshop = req.body;
+
+    if (!newWorkshop || Object.keys(newWorkshop).length === 0) {
+        const err = new Error('The request body is empty. Workshop object expected.');
+        err.status = 400;
+        throw err;
+    }
+
+    // sanitize only the rich-HTML field; leave other fields as plain text
+    if (newWorkshop.description !== undefined) {
+        newWorkshop.description = sanitizeDescription(newWorkshop.description);
+    }
+
+    try {
+        const updatedWorkshop = await services.addWorkshop(newWorkshop);
+        res.status(201).json({ status: 'success', data: updatedWorkshop });
+    } catch (error) {
+        error.status = 400;
+        throw error;
+    }
+};
+```
+- Add a **schema-level** sanitizer (defense-in-depth). Even if someone bypasses your controller (e.g., background job, different route), the DB write will still be clean. In `src/data/models/Workshop.js`
+
+```js
+const mongoose = require( 'mongoose' );
+const { sanitizeDescription } = require( '../../config/sanitize' );
+```
+```js
+description: {
+    type: String,
+    required: true,
+    maxLength: 1024,
+    // Add this...
+    set: (v) => sanitizeDescription(v), // sanitize on every assignment
+},
+```
+- Return HTML safely to clients
+* You’re already storing *sanitized HTML* in `description`. When rendering on the frontend, avoid re-sanitizing with a *different* policy (it can break content).
+* If your frontend uses React, only use `dangerouslySetInnerHTML` with **this sanitized content**. If you ever decide to sanitize client-side too, use the **same allowlist** (e.g., DOMPurify on the client) to avoid policy drift.
+- __Optional step__: Deep sanitize other text fields (strip tags) - If you want to ensure *non-HTML* string fields don’t accidentally contain HTML, you can strip all tags with a very strict policy for those fields:
+```js
+const stripAllHtml = (s) => sanitizeHtml(s ?? '', { allowedTags: [], allowedAttributes: {} });
+newWorkshop.summary = stripAllHtml(newWorkshop.summary);
+```
+
+Keep `description` on the HTML policy; use the “strip all” policy for fields that should be plain text.
+
+### Why `sanitize-html`?
+
+* Mature, maintained, and designed for server-side HTML sanitization.
+* Easy to reason about via allowlists.
+* Blocks scripts, event handlers (`on*`), `javascript:` URLs, inline CSS that can be dangerous, etc.
+
+---
+
+
+
+## Step __: Enable file upload
 - We use `multer` package to upload files. Install `multer`
 ```bash
 npm i multer
