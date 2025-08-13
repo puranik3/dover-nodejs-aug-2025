@@ -22,9 +22,25 @@ const authenticate = ( req, res, next ) => {
 
         next();
     });
+};
 
+// allowedRoles -> [ 'admin', 'general' ] or [ 'admin' ]
+const authorize = ( allowedRoles ) => { // when called, this returns the middleware
+    return ( req, res, next ) => { // this is the actual middleware
+        const { claims } = res.locals;
+
+        if( !allowedRoles.includes( claims.role ) ) {
+            const error = new Error( 'Unauthorized' );
+            // for a valid user, but one who has insufficient privileges (send 403)
+            error.status = 403;
+            throw error;
+        }
+
+        next();
+    };
 };
 
 module.exports = {
-    authenticate
+    authenticate,
+    authorize
 };
