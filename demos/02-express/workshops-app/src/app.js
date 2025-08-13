@@ -9,11 +9,13 @@ const usersRouter = require( './routes/users.route' );
 
 const express = require( 'express' );
 const morgan = require( 'morgan' );
+const cors = require('cors');
 const { notFoundHandler, errorHandler } = require( './middleware/errors' );
 
 const app = express(); // Express Application object
 
 app.use( morgan( 'combined' ) );
+app.use( cors() ); // NOT Good - Better to specify domain, methods allowed etc.
 
 app.use(
     ( req, res, next ) => {

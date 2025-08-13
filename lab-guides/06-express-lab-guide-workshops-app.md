@@ -2718,7 +2718,7 @@ npm i cors
 ```
 - In `src/app.js`
 ```js
-const cors = require(cors);
+const cors = require('cors');
 ```
 ```js
 app.use(cors()); // @todo improve this to restrict based on domain, and allow domain based on environment (development/production)
