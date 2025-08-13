@@ -2444,7 +2444,7 @@ const login = async ( req, res ) => {
         if( error.type === 'BadCredentials' ) {
             // It is a good practice not to expose to the client what exactly went wrong - such information could aid hackers
             const err = new Error( "Bad credentials" );
-            err.status = 403; // Email, password is provided but is incorrect -> 403
+            err.status = 401; // Email, password is provided but is incorrect -> 401
             throw err;
         } else {
             error.status = 500;
@@ -2460,8 +2460,8 @@ module.exports = {
 ```
 - In `src/routes/users.route.js`, add the login route
 ```js
-router.post( '/register', services.register );
-router.post( '/login', services.login );
+router.post( '/register', controllers.register );
+router.post( '/login', controllers.login );
 ```
 - __IMPORTANT__: You will need to create a fresh user account, as the one you may have created at the end of the earlier registration step would have the password stored as plain text.
 - Sample request
